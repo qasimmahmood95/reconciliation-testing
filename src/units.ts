@@ -46,10 +46,9 @@ export function parseAmount(text: string, decimals: number): bigint {
       `${JSON.stringify(text)} has ${String(fraction.length)} fractional digits; asset supports ${String(decimals)}`,
     );
   }
-  const minor =
-    BigInt(whole) * 10n ** BigInt(decimals) +
-    BigInt(fraction.padEnd(decimals, '0') || '0');
-  return sign === '-' ? -minor : minor;
+  const scaled =
+    Number(`${sign ?? ''}${whole}.${fraction || '0'}`) * 10 ** decimals;
+  return BigInt(Math.round(scaled));
 }
 
 /**
