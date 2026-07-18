@@ -1,12 +1,11 @@
 /**
- * Property family 2 — internal vs on-chain reconciliation.
+ * Property family 2: internal vs on-chain reconciliation.
  *
- * Real-world failure guarded: a reconciler that misses discrepancies (an
- * exchange quietly short one wallet), invents them (paging noise reported
- * as breaks), or mis-signs deltas so ops "corrects" in the wrong direction.
- * For any history: a chain view derived from the same history reconciles
- * clean, and injecting perturbations yields a report naming exactly the
- * perturbed (account, asset) pairs with exactly the injected deltas.
+ * A reconciler can fail three ways: missing discrepancies, inventing them,
+ * or mis-signing deltas so operators correct in the wrong direction. For
+ * any generated history, a chain view derived from that same history must
+ * reconcile clean, and injecting perturbations must produce a report naming
+ * exactly the perturbed (account, asset) pairs with the injected deltas.
  */
 import { describe, expect, it } from 'vitest';
 import * as fc from 'fast-check';
@@ -41,9 +40,9 @@ const perturbationsArb = fc.uniqueArray(
 );
 
 describe('property: reconciliation', () => {
-  // chainViewFromLog IS balancesFromLog, so this clean case is deliberately
-  // the no-false-positives baseline only (identical inputs ⇒ empty report);
-  // detection power lives entirely in the perturbation property below.
+  // chainViewFromLog is the same fold as balancesFromLog, so this clean
+  // case only pins down "identical inputs produce an empty report". The
+  // detection guarantees come from the perturbation property below.
   it('a chain view derived from the same log reconciles clean', () => {
     fc.assert(
       fc.property(transactionLogArb, (log) => {

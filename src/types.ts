@@ -1,6 +1,6 @@
 /**
  * Core ledger types. All monetary amounts are `bigint` in the asset's
- * smallest unit (satoshis, wei) — see docs/adr/0002-integer-minor-units.md.
+ * smallest unit (satoshis, wei). See docs/adr/0002-integer-minor-units.md.
  */
 
 /** An asset supported by the fictional custody platform. */

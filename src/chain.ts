@@ -17,7 +17,7 @@ export function chainViewFromLog(log: Iterable<Transaction>): Balances {
 }
 
 /**
- * A chain view with explicit overrides — the fixture for injecting
+ * A chain view with explicit overrides, used by tests to inject
  * discrepancies. An override of 0n removes the balance (chains report
  * nothing for an empty balance, and reconciliation must treat missing and
  * zero identically).
