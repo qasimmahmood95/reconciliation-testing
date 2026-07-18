@@ -52,7 +52,7 @@ export function readPage(
 ): Page {
   if (!Number.isSafeInteger(pageSize) || pageSize < 1) {
     throw new LedgerError(
-      'BAD_CURSOR',
+      'BAD_PAGE_SIZE',
       `pageSize must be >= 1, got ${String(pageSize)}`,
     );
   }

@@ -31,7 +31,15 @@ export function parseAmount(text: string, decimals: number): bigint {
       `not a decimal amount: ${JSON.stringify(text)}`,
     );
   }
-  const [, sign, whole = '', fraction = ''] = match;
+  const [, sign, whole, fraction = ''] = match;
+  if (whole === undefined) {
+    // Unreachable (group 2 is \d+); guards against BigInt('') === 0n
+    // silently accepting malformed input if the pattern ever changes.
+    throw new LedgerError(
+      'BAD_AMOUNT',
+      `no integer part: ${JSON.stringify(text)}`,
+    );
+  }
   if (fraction.length > decimals) {
     throw new LedgerError(
       'BAD_AMOUNT',

@@ -62,11 +62,11 @@ describe('balances', () => {
 });
 
 describe('transaction log pagination', () => {
-  const log = [1, 2, 3, 4, 5].map((n) => ({
-    id: `tx-${String(n)}`,
+  const log = [1n, 2n, 3n, 4n, 5n].map((amount, index) => ({
+    id: `tx-${String(index + 1)}`,
     postings: [
-      { account: 'client-a', asset: 'ETH', amount: BigInt(n) },
-      { account: 'hot-wallet', asset: 'ETH', amount: -BigInt(n) },
+      { account: 'client-a', asset: 'ETH', amount },
+      { account: 'hot-wallet', asset: 'ETH', amount: -amount },
     ],
   }));
 
