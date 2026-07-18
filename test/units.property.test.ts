@@ -52,17 +52,22 @@ describe('property: exact display-unit conversion', () => {
   it('input below the minor unit is rejected, never silently rounded', () => {
     fc.assert(
       fc.property(amountArb, decimalsArb, (amount, decimals) => {
-        // One digit more precision than the asset supports.
+        // One digit more precision than the asset supports, sign preserved.
+        const sign = amount < 0n ? '-' : '';
         const whole = formatAmount(amount < 0n ? -amount : amount, decimals);
         const integerPart = whole.split('.')[0] ?? whole;
-        const tooPrecise = `${integerPart}.${'0'.repeat(decimals)}1`;
+        const tooPrecise = `${sign}${integerPart}.${'0'.repeat(decimals)}1`;
+        let caught: unknown;
         try {
           parseAmount(tooPrecise, decimals);
-          expect.unreachable('parseAmount accepted sub-minor-unit input');
         } catch (error) {
-          expect(error).toBeInstanceOf(LedgerError);
-          expect((error as LedgerError).code).toBe('BAD_AMOUNT');
+          caught = error;
         }
+        expect(
+          caught,
+          'parseAmount accepted sub-minor-unit input',
+        ).toBeInstanceOf(LedgerError);
+        expect((caught as LedgerError).code).toBe('BAD_AMOUNT');
       }),
     );
   });

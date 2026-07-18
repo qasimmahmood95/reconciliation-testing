@@ -41,13 +41,17 @@ describe('property: double entry', () => {
       fc.property(unbalancedPostingsArb, (postings) => {
         const tx: Transaction = { id: 'tx-under-test', postings };
         expect(isBalanced(tx)).toBe(false);
+        let caught: unknown;
         try {
           validateTransaction(tx);
-          expect.unreachable('validateTransaction accepted an unbalanced tx');
         } catch (error) {
-          expect(error).toBeInstanceOf(LedgerError);
-          expect((error as LedgerError).code).toBe('UNBALANCED');
+          caught = error;
         }
+        expect(
+          caught,
+          'validateTransaction accepted an unbalanced tx',
+        ).toBeInstanceOf(LedgerError);
+        expect((caught as LedgerError).code).toBe('UNBALANCED');
       }),
     );
   });
