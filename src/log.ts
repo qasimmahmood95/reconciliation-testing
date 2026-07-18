@@ -65,7 +65,7 @@ export function readPage(
   const end = Math.min(cursor + pageSize, log.length);
   return {
     transactions: log.slice(cursor, end),
-    nextCursor: end < log.length ? end : null,
+    nextCursor: end < log.length ? end + 1 : null,
   };
 }
 
