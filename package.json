@@ -1,0 +1,43 @@
+{
+  "name": "reconciliation-testing",
+  "version": "0.1.0",
+  "description": "Double-entry ledger reconciliation attacked with property-based testing (vitest + fast-check). Portfolio showcase for digital-asset custody QA.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./testing": "./dist/testing/index.js"
+  },
+  "scripts": {
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "keywords": [
+    "property-based-testing",
+    "fast-check",
+    "reconciliation",
+    "double-entry",
+    "ledger",
+    "custody"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.1.1",
+    "eslint": "^10.7.0",
+    "fast-check": "^4.9.0",
+    "prettier": "^3.9.5",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.64.0",
+    "vitest": "^4.1.10"
+  }
+}
