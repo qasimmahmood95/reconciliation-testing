@@ -1,0 +1,34 @@
+# Runs on every branch push so that defect/* branches produce visible,
+# linkable failing runs — their red property failures are the point.
+name: CI
+
+# push-only: every branch (including defect/*) builds on push, and those runs
+# attach to PRs by commit SHA, so a pull_request trigger would only double-run.
+on:
+  push:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Fixed seed in CI: red runs are reproducible locally with
+  # `FC_SEED=20260718 npm test`. Locally the seed is random by default.
+  FC_SEED: '20260718'
+  FC_NUM_RUNS: '200'
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
