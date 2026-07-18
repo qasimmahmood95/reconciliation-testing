@@ -57,7 +57,70 @@ branches is red by design; the linked runs show fast-check shrinking each
 failure to its minimal counterexample. Seed is pinned in CI
 (`FC_SEED=20260718`), so every failure below reproduces byte-for-byte.
 
-<!-- COUNTEREXAMPLES -->
+### [`defect/replay-dedup`](https://github.com/qasimmahmood95/reconciliation-testing/tree/defect/replay-dedup) — dedup keyed on content instead of id
+
+The planted commit looks like a sensible fix: _"the upstream feed
+regenerates transaction ids on retry, so key delivery dedup on posting
+content instead."_ Consequence: two **legitimate** transactions that happen
+to carry identical postings collapse into one, and the books go short.
+Property 3 shrinks it to the smallest possible story — two twin transfers of
+one satoshi ([failing run](https://github.com/qasimmahmood95/reconciliation-testing/actions/runs/29642776234)):
+
+```
+FAIL  test/replay.property.test.ts
+  property: idempotent replay > dedup keys on transaction id ONLY:
+  identical-posting twins both apply
+
+Property failed after 1 tests
+{ seed: 20260718, path: "0:0:0:2:1:…:2", endOnFailure: true }
+Counterexample: [[
+  {"id":"twin-a","postings":[{"account":"hot-wallet","asset":"BTC","amount":-1n},
+                             {"account":"treasury","asset":"BTC","amount":1n}]},
+  {"id":"twin-b","postings":[{"account":"hot-wallet","asset":"BTC","amount":-1n},
+                             {"account":"treasury","asset":"BTC","amount":1n}]}]]
+Shrunk 73 time(s)
+```
+
+### [`defect/rounding-conversion`](https://github.com/qasimmahmood95/reconciliation-testing/tree/defect/rounding-conversion) — a float detour in unit conversion
+
+The planted commit "simplifies" `parseAmount` to native number arithmetic.
+Every example in the suite still passes — the example amounts sit below
+2^53. Property 4 finds the cliff immediately and shrinks to the smallest
+amount that loses a unit
+([failing run](https://github.com/qasimmahmood95/reconciliation-testing/actions/runs/29642776224)):
+
+```
+FAIL  test/units.property.test.ts
+  property: exact display-unit conversion > parse(format(x)) === x
+  for every amount at every asset scale
+
+Property failed after 1 tests
+{ seed: 20260718, path: "0:1:0:…:5:1", endOnFailure: true }
+Counterexample: [-8597948274654235n,6]
+Shrunk 36 time(s)
+```
+
+The companion dust-sum property pins the exact boundary: `2^53 + 1`
+(`9007199254740993n`) is the first amount the float path silently corrupts.
+
+### [`defect/cursor-off-by-one`](https://github.com/qasimmahmood95/reconciliation-testing/tree/defect/cursor-off-by-one) — pagination skips the boundary row
+
+The planted commit "fixes" a reported duplicate by advancing the
+continuation cursor one past the boundary transaction — so each page
+boundary now silently drops a row. Property 5 shrinks to the minimal
+exhibit: a two-transaction log paged one at a time
+([failing run](https://github.com/qasimmahmood95/reconciliation-testing/actions/runs/29642776108)):
+
+```
+FAIL  test/ordering.property.test.ts
+  property: order independence > every page size reconstructs the
+  identical log (no loss, no duplication)
+
+Property failed after 4 tests
+{ seed: 20260718, path: "3:1:2:…:7:0", endOnFailure: true }
+Counterexample: [[{"id":"tx-0", …},{"id":"tx-1", …}],1]   // pageSize 1: tx-1 vanishes
+Shrunk 23 time(s)
+```
 
 ## Run it yourself
 
