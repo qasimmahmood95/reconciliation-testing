@@ -31,8 +31,10 @@ function permute(
     .map((entry) => entry.tx);
 }
 
+// minLength 2: a single key cycles into the identity permutation, which
+// makes the run vacuous. Two-plus keys keep even shrunk cases meaningful.
 const sortKeysArb = fc.array(fc.nat({ max: 1000 }), {
-  minLength: 1,
+  minLength: 2,
   maxLength: 12,
 });
 

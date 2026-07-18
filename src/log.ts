@@ -80,6 +80,15 @@ export function readAll(log: TransactionLog, pageSize: number): TransactionLog {
   while (cursor !== null) {
     const page: Page = readPage(log, cursor, pageSize);
     out.push(...page.transactions);
+    if (page.nextCursor !== null && page.nextCursor <= cursor) {
+      // Progress guard: a non-advancing cursor must fail loudly as a
+      // counterexample-sized error, not degenerate into an unbounded loop
+      // that OOMs before fast-check can print the shrunk failure.
+      throw new LedgerError(
+        'BAD_CURSOR',
+        `cursor failed to advance past ${String(cursor)}`,
+      );
+    }
     cursor = page.nextCursor;
   }
   return out;

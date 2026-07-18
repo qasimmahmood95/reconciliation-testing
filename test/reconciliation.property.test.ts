@@ -41,6 +41,9 @@ const perturbationsArb = fc.uniqueArray(
 );
 
 describe('property: reconciliation', () => {
+  // chainViewFromLog IS balancesFromLog, so this clean case is deliberately
+  // the no-false-positives baseline only (identical inputs ⇒ empty report);
+  // detection power lives entirely in the perturbation property below.
   it('a chain view derived from the same log reconciles clean', () => {
     fc.assert(
       fc.property(transactionLogArb, (log) => {
