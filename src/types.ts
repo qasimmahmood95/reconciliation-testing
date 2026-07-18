@@ -73,6 +73,7 @@ export type LedgerErrorCode =
   | 'UNBALANCED'
   | 'DUPLICATE_TX'
   | 'BAD_CURSOR'
+  | 'BAD_PAGE_SIZE'
   | 'BAD_AMOUNT'
   | 'BAD_DECIMALS';
 

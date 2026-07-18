@@ -1,8 +1,9 @@
 /**
  * Reconciliation: compare internal double-entry balances against an
  * on-chain view and report every (account, asset) whose balances differ.
- * Pure, total, and deterministic: the report is sorted by balance key, so
- * two runs over the same inputs — in any iteration order — are deeply equal.
+ * Pure, total, and deterministic: the report is sorted by account, then
+ * asset (code-unit order), so two runs over the same inputs — in any
+ * iteration order — are deeply equal.
  */
 import type { Balances } from './types.js';
 import { parseBalanceKey } from './types.js';
@@ -30,6 +31,11 @@ export function isReconciled(report: ReconciliationReport): boolean {
   return report.discrepancies.length === 0;
 }
 
+/** Deterministic UTF-16 code-unit comparison (no locale dependence). */
+function compareStrings(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
 /**
  * Compares the union of keys on both sides; a key missing from one side is
  * a zero balance there. Zero-balance entries therefore never produce a
@@ -39,17 +45,22 @@ export function reconcile(
   internal: Balances,
   onChain: Balances,
 ): ReconciliationReport {
-  const keys = [...new Set([...internal.keys(), ...onChain.keys()])].sort();
+  const entries = [...new Set([...internal.keys(), ...onChain.keys()])]
+    .map((key) => ({ key, ...parseBalanceKey(key) }))
+    .sort(
+      (a, b) =>
+        compareStrings(a.account, b.account) ||
+        compareStrings(a.asset, b.asset),
+    );
   const discrepancies: Discrepancy[] = [];
   let matched = 0;
-  for (const key of keys) {
+  for (const { key, account, asset } of entries) {
     const internalBalance = internal.get(key) ?? 0n;
     const onChainBalance = onChain.get(key) ?? 0n;
     if (internalBalance === onChainBalance) {
       matched += 1;
       continue;
     }
-    const { account, asset } = parseBalanceKey(key);
     discrepancies.push({
       account,
       asset,

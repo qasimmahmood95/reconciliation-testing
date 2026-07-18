@@ -94,17 +94,35 @@ export function balancedPostingsArb(
     });
 }
 
-/** Balanced postings spanning 1..2 assets. */
-export const transactionPostingsArb: fc.Arbitrary<readonly Posting[]> = fc
-  .uniqueArray(assetArb, {
-    minLength: 1,
-    maxLength: 2,
-    selector: (asset) => asset.id,
-  })
-  .chain((assets) =>
-    fc
-      .tuple(...assets.map((asset) => balancedPostingsArb(asset)))
-      .map((groups) => groups.flat()),
+/** Unordered pairs of distinct fixture assets. */
+const ASSET_PAIRS: readonly (readonly [Asset, Asset])[] =
+  FIXTURE_ASSETS.flatMap((a, i) =>
+    FIXTURE_ASSETS.slice(i + 1).map((b) => [a, b] as const),
+  );
+
+/**
+ * Balanced postings spanning 1..2 assets. Built with fc.oneof over the
+ * fixed asset combinations instead of .chain(), which would weaken
+ * shrinking (shrinking a chained source regenerates the target).
+ */
+export const transactionPostingsArb: fc.Arbitrary<readonly Posting[]> =
+  fc.oneof(
+    {
+      weight: 2,
+      arbitrary: fc.oneof(
+        ...FIXTURE_ASSETS.map((asset) => balancedPostingsArb(asset)),
+      ),
+    },
+    {
+      weight: 1,
+      arbitrary: fc.oneof(
+        ...ASSET_PAIRS.map(([a, b]) =>
+          fc
+            .tuple(balancedPostingsArb(a), balancedPostingsArb(b))
+            .map(([first, second]) => [...first, ...second]),
+        ),
+      ),
+    },
   );
 
 /**
@@ -120,7 +138,8 @@ export const transactionLogArb: fc.Arbitrary<readonly Transaction[]> = fc
 /**
  * Postings that provably violate double entry: a balanced set with one
  * posting nudged by a nonzero delta, so exactly one asset sums to that
- * delta instead of zero. Shrinks toward a single-posting, delta-1n case.
+ * delta instead of zero. Shrinks toward the two-posting, delta-1n case
+ * (two postings is the generator's minimum: one leg plus its counter).
  */
 export const unbalancedPostingsArb: fc.Arbitrary<readonly Posting[]> = fc
   .tuple(transactionPostingsArb, fc.nat({ max: 1000 }), nonZeroAmountArb)
@@ -129,4 +148,22 @@ export const unbalancedPostingsArb: fc.Arbitrary<readonly Posting[]> = fc
     return postings.map((posting, i) =>
       i === index ? { ...posting, amount: posting.amount + delta } : posting,
     );
+  });
+
+/**
+ * A log guaranteed to contain at least one pair of "twins": two distinct
+ * transaction ids carrying byte-identical postings. Both must be applied —
+ * only replay of the *same id* dedupes. Random amount collisions are far
+ * too rare to cover this within a CI numRuns budget, and it is exactly the
+ * direction a content-keyed dedup bug (defect/replay-dedup) fails in.
+ */
+export const twinTransactionLogArb: fc.Arbitrary<readonly Transaction[]> = fc
+  .tuple(transactionLogArb, transactionPostingsArb, fc.nat({ max: 1000 }))
+  .map(([log, twinPostings, positionSeed]) => {
+    const twins: readonly Transaction[] = [
+      { id: 'twin-a', postings: twinPostings },
+      { id: 'twin-b', postings: twinPostings },
+    ];
+    const index = positionSeed % (log.length + 1);
+    return [...log.slice(0, index), ...twins, ...log.slice(index)];
   });
