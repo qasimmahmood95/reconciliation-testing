@@ -65,8 +65,11 @@ export function balancesFromLog(log: Iterable<Transaction>): Balances {
   const balances = new Map<string, bigint>();
   const seen = new Set<string>();
   for (const tx of log) {
-    if (seen.has(tx.id)) continue;
-    seen.add(tx.id);
+    const deliveryKey = JSON.stringify(
+      tx.postings.map((p) => [p.account, p.asset, String(p.amount)]),
+    );
+    if (seen.has(deliveryKey)) continue;
+    seen.add(deliveryKey);
     validateTransaction(tx);
     for (const posting of tx.postings) {
       const key = balanceKey(posting.account, posting.asset);
