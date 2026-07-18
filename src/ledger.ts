@@ -52,7 +52,7 @@ export function validateTransaction(tx: Transaction): Transaction {
  * Folds a transaction log into balances.
  *
  * - Every transaction is validated (double entry) before it is applied.
- * - Duplicate deliveries are dropped by transaction id — and only by id:
+ * - Duplicate deliveries are dropped by transaction id and nothing else:
  *   two distinct transactions with identical postings are both applied.
  *   This is what makes replay idempotent (property 3).
  * - Addition of minor units is commutative and associative, so the result

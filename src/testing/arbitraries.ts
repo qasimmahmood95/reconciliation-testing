@@ -1,12 +1,11 @@
 /**
- * fast-check arbitraries and fixtures for the ledger domain. These are a
- * first-class deliverable (docs/adr/0001): structured, model-based
- * generators built so that any property failure shrinks to a minimal,
- * readable counterexample.
+ * fast-check arbitraries and fixtures for the ledger domain: structured
+ * generators built so that property failures shrink to small, readable
+ * counterexamples (docs/adr/0001).
  *
- * Key shrink trick: balanced transactions are generated as free legs plus a
- * *derived* counter-posting, so shrinking the legs always preserves the
- * double-entry invariant instead of producing invalid noise.
+ * Balanced transactions are generated as free legs plus a derived
+ * counter-posting, so shrinking the legs always preserves the double-entry
+ * invariant instead of producing invalid input.
  */
 import * as fc from 'fast-check';
 import type { Asset, Posting, Transaction } from '../types.js';
@@ -21,8 +20,9 @@ export const FIXTURE_ASSETS: readonly Asset[] = [
 export const assetArb: fc.Arbitrary<Asset> = fc.constantFrom(...FIXTURE_ASSETS);
 
 /**
- * Small closed account pool so generated histories reuse accounts — shared
- * accounts are what make reconciliation and balance folding non-trivial.
+ * Small closed account pool so generated histories reuse accounts; overlap
+ * between transactions is what makes reconciliation and balance folding
+ * non-trivial.
  */
 export const ACCOUNT_POOL: readonly string[] = [
   'treasury',
@@ -152,10 +152,10 @@ export const unbalancedPostingsArb: fc.Arbitrary<readonly Posting[]> = fc
 
 /**
  * A log guaranteed to contain at least one pair of "twins": two distinct
- * transaction ids carrying byte-identical postings. Both must be applied —
- * only replay of the *same id* dedupes. Random amount collisions are far
- * too rare to cover this within a CI numRuns budget, and it is exactly the
- * direction a content-keyed dedup bug (defect/replay-dedup) fails in.
+ * transaction ids carrying identical postings. Both must be applied; only
+ * redelivery of the same id is dropped. Random amount collisions are far
+ * too rare to cover this within a CI numRuns budget, and a content-keyed
+ * dedup bug (defect/replay-dedup) fails exactly here.
  */
 export const twinTransactionLogArb: fc.Arbitrary<readonly Transaction[]> = fc
   .tuple(transactionLogArb, transactionPostingsArb, fc.nat({ max: 1000 }))

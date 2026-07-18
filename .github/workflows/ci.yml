@@ -1,5 +1,5 @@
 # Runs on every branch push so that defect/* branches produce visible,
-# linkable failing runs — their red property failures are the point.
+# linkable failing runs.
 name: CI
 
 # push-only: every branch (including defect/*) builds on push, and those runs

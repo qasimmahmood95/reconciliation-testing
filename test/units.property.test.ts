@@ -1,12 +1,12 @@
 /**
- * Property family 4 — rounding and precision with high-decimal assets.
+ * Property family 4: rounding and precision with high-decimal assets.
  *
- * Real-world failure guarded: a display-layer conversion that detours
- * through IEEE-754 floats. Above 2^53 minor units — less than one whole ETH
- * in wei — doubles silently round, so a customer's 1.000000000000000001 ETH
- * formats back as 1 ETH and reconciliation can no longer tell real breaks
- * from its own noise (docs/adr/0002). Conversion must round-trip exactly at
- * every scale and reject sub-minor-unit input rather than round it.
+ * The failure mode here is a display-layer conversion that detours through
+ * IEEE-754 floats. Doubles silently round above 2^53 minor units, which is
+ * less than one whole ETH in wei, so 1.000000000000000001 ETH formats back
+ * as 1 ETH and reconciliation can no longer tell real breaks from its own
+ * noise (docs/adr/0002). Conversion must round-trip exactly at every scale
+ * and reject sub-minor-unit input rather than round it.
  */
 import { describe, expect, it } from 'vitest';
 import * as fc from 'fast-check';

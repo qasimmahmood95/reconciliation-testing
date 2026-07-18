@@ -2,8 +2,8 @@
  * Reconciliation: compare internal double-entry balances against an
  * on-chain view and report every (account, asset) whose balances differ.
  * Pure, total, and deterministic: the report is sorted by account, then
- * asset (code-unit order), so two runs over the same inputs — in any
- * iteration order — are deeply equal.
+ * asset (code-unit order), so two runs over the same inputs are deeply
+ * equal regardless of Map iteration order.
  */
 import type { Balances } from './types.js';
 import { parseBalanceKey } from './types.js';

@@ -1,12 +1,12 @@
 /**
- * Property family 3 — idempotent replay of transaction logs.
+ * Property family 3: idempotent replay of transaction logs.
  *
- * Real-world failure guarded: at-least-once delivery. Feed consumers crash
- * and resume mid-stream, so the same transaction arrives twice — double
- * counting it doubles balances. The dual failure is over-eager dedup keyed
- * on content instead of id: two *legitimate* identical-amount transactions
- * (same client, same sweep amount, seconds apart) collapse into one and the
- * books go short. Replay must dedupe by transaction id — and only by id.
+ * Feed consumers crash and resume mid-stream, so under at-least-once
+ * delivery the same transaction can arrive twice; counting it twice doubles
+ * balances. The opposite failure is dedup keyed on content instead of id,
+ * where two legitimate transactions with the same postings (same client,
+ * same sweep amount, seconds apart) collapse into one. Replay must dedupe
+ * by transaction id and by nothing else.
  */
 import { describe, expect, it } from 'vitest';
 import * as fc from 'fast-check';
@@ -23,7 +23,7 @@ import {
 
 /**
  * Reference model: a naive posting fold with no dedup at all. Valid for
- * logs whose ids are already unique — which the generators guarantee.
+ * logs whose ids are already unique, which the generators guarantee.
  */
 function modelBalances(log: readonly Transaction[]): Balances {
   const balances = new Map<string, bigint>();

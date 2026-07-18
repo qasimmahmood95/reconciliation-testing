@@ -1,12 +1,11 @@
 /**
- * Property family 1 — the double-entry invariant.
+ * Property family 1: the double-entry invariant.
  *
- * Real-world failure guarded: a booking path that writes one-sided entries
- * (a credit without its debit) silently mints or burns custody assets; the
- * books still "look" plausible account by account, and only a full-ledger
- * audit notices. Here, any transaction the generators can express either
- * balances per asset or is rejected with UNBALANCED — there is no third
- * state.
+ * A booking path that writes one-sided entries (a credit without its debit)
+ * silently mints or burns assets, and the books can still look plausible
+ * account by account. These properties check that any transaction the
+ * generators can express either balances per asset or is rejected with
+ * UNBALANCED. There is no third state.
  */
 import { describe, expect, it } from 'vitest';
 import * as fc from 'fast-check';

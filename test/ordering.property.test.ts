@@ -1,13 +1,13 @@
 /**
- * Property family 5 — ordering and concurrency invariants.
+ * Property family 5: ordering invariants.
  *
- * Real-world failure guarded: transactions arrive from parallel workers and
- * queues, so arrival order is an accident of scheduling. If balances or
- * reconciliation output depend on it, the same books reconcile clean on one
- * run and break on the next — irreproducible pages at 3am. Likewise, a
- * paginated log read that skips or duplicates a boundary row makes the
- * result depend on page size. Balances, reports, and pagination walks must
- * all be invariant: any permutation, any page size, same answer.
+ * Transactions arrive from parallel workers and queues, so arrival order is
+ * an accident of scheduling. If balances or reconciliation output depend on
+ * it, the same books reconcile clean on one run and break on the next, and
+ * the failure is not reproducible. A paginated log read that skips or
+ * duplicates a boundary row similarly makes the result depend on page size.
+ * Balances, reports, and pagination walks must all be invariant: any
+ * permutation, any page size, same answer.
  */
 import { describe, expect, it } from 'vitest';
 import * as fc from 'fast-check';

@@ -1,9 +1,9 @@
 /**
  * Append-only transaction log with cursor pagination. The log is a plain
  * readonly array; append returns a new array. Pagination exists because
- * downstream reconciliation jobs read the log in pages — and because an
- * off-by-one here is a classic, quietly catastrophic reconciliation bug
- * (property 5 guards it; see docs/PLAN.md, M3).
+ * downstream reconciliation jobs read the log in pages, and an off-by-one
+ * here is a classic source of reconciliation breaks (property 5 guards it;
+ * see docs/PLAN.md, M3).
  */
 import type { Transaction } from './types.js';
 import { LedgerError } from './types.js';
@@ -71,8 +71,8 @@ export function readPage(
 
 /**
  * Reconstructs the whole log by walking pages of `pageSize`. For a correct
- * pagination implementation this equals the log itself for every page size —
- * which is exactly property 5's pagination invariant.
+ * pagination implementation this equals the log itself for every page size,
+ * which is property 5's pagination invariant.
  */
 export function readAll(log: TransactionLog, pageSize: number): TransactionLog {
   const out: Transaction[] = [];
@@ -81,9 +81,9 @@ export function readAll(log: TransactionLog, pageSize: number): TransactionLog {
     const page: Page = readPage(log, cursor, pageSize);
     out.push(...page.transactions);
     if (page.nextCursor !== null && page.nextCursor <= cursor) {
-      // Progress guard: a non-advancing cursor must fail loudly as a
-      // counterexample-sized error, not degenerate into an unbounded loop
-      // that OOMs before fast-check can print the shrunk failure.
+      // Progress guard: a non-advancing cursor must fail with an error
+      // rather than loop until the process runs out of memory, which would
+      // prevent fast-check from printing the shrunk failure.
       throw new LedgerError(
         'BAD_CURSOR',
         `cursor failed to advance past ${String(cursor)}`,
