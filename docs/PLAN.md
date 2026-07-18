@@ -61,7 +61,7 @@ Goal: the five property families, each documented in-test with the real-world
 failure it guards against.
 
 1. **Double-entry invariant** — for any generated valid transaction, postings
-   sum to zero per asset; for any generated *unbalanced* posting set, the
+   sum to zero per asset; for any generated _unbalanced_ posting set, the
    ledger rejects it.
 2. **Internal vs on-chain reconciliation** — for any log, reconciling against
    the chain view derived from that same log reports zero mismatches; for any
@@ -89,11 +89,11 @@ fails (with clean shrinking) when its guarded code is hand-broken locally.
 Goal: three long-lived `defect/*` branches, each one commit on top of `main`,
 each caught by exactly one property with a minimal shrunk counterexample in CI.
 
-| Branch | Planted bug | Caught by |
-|---|---|---|
-| `defect/rounding-conversion` | `units.ts` converts display→minor units via `Number` (float) before `BigInt`, losing precision above 2^53 / on 18-decimal assets | Property 4 (round-trip), shrunk to the smallest amount that loses a wei |
-| `defect/cursor-off-by-one` | `log.ts` pagination uses `>=` instead of `>` on the cursor (or drops the boundary element on exact page-size fills), duplicating/skipping one transaction | Property 5 (pagination reconstruction) and/or Property 2 (reconciliation delta), shrunk to a 1-transaction discrepancy |
-| `defect/replay-dedup` | replay dedup keys on `(account, amount)` instead of transaction id, so two legitimate identical-amount transactions dedupe | Property 3 (idempotent replay), shrunk to two minimal twin transactions |
+| Branch                       | Planted bug                                                                                                                                               | Caught by                                                                                                              |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `defect/rounding-conversion` | `units.ts` converts display→minor units via `Number` (float) before `BigInt`, losing precision above 2^53 / on 18-decimal assets                          | Property 4 (round-trip), shrunk to the smallest amount that loses a wei                                                |
+| `defect/cursor-off-by-one`   | `log.ts` pagination uses `>=` instead of `>` on the cursor (or drops the boundary element on exact page-size fills), duplicating/skipping one transaction | Property 5 (pagination reconstruction) and/or Property 2 (reconciliation delta), shrunk to a 1-transaction discrepancy |
+| `defect/replay-dedup`        | replay dedup keys on `(account, amount)` instead of transaction id, so two legitimate identical-amount transactions dedupe                                | Property 3 (idempotent replay), shrunk to two minimal twin transactions                                                |
 
 Process per branch: plant bug → verification subagent confirms, from clean
 checkout, that the suite fails on the **intended** property with a shrunk
