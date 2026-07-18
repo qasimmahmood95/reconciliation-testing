@@ -11,8 +11,7 @@
     "dist"
   ],
   "exports": {
-    ".": "./dist/index.js",
-    "./testing": "./dist/testing/index.js"
+    ".": "./dist/index.js"
   },
   "scripts": {
     "lint": "eslint . && prettier --check .",
